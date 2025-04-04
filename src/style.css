@@ -1,0 +1,630 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #1a1a1a;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --tile-font-size: 2rem;
+  --primary-color: #4a5bff;
+  --hover-color: #5a6bff;
+  --bg-dark: #1a1a1a;
+  --bg-light: #f5f5f5;
+  --tile-dark: #4a4a4a;
+  --tile-light: #e0e0e0;
+  --text-dark: rgba(255, 255, 255, 0.87);
+  --text-light: #213547;
+  --success-color: #4caf50;
+  --wood-primary: #966F33;
+  --wood-secondary: #7D5A24;
+  --wood-highlight: #AB8044;
+  --wood-shadow: #5D4A2C;
+  --wood-border: #4A3520;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+h1, h2, h3 {
+  margin-top: 0;
+  text-align: center;
+  color: var(--text-dark);
+}
+
+h1 {
+  font-size: 2.8rem;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+#app {
+  width: 100%;
+  height: 100vh;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #2a2a2a;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  border-color: var(--primary-color);
+  background-color: #3a3a3a;
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+.instructions {
+  margin-top: 1.5rem;
+  color: #a0a0a0;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* Welcome screen styles */
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+  padding: 2rem;
+  background-color: rgba(42, 42, 42, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.welcome-content p {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.dimension-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.dimension-selector label {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+#dimension-select {
+  padding: 0.8rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #2a2a2a;
+  color: var(--text-dark);
+  cursor: pointer;
+  width: 100%;
+}
+
+#dimension-select option {
+  padding: 0.5rem;
+}
+
+.pulse-button {
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 0.8em 2em;
+  margin-top: 1rem;
+  animation: pulse 2s infinite;
+}
+
+.pulse-button:hover {
+  animation: none;
+  background-color: var(--hover-color);
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 91, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(74, 91, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 91, 255, 0);
+  }
+}
+
+/* Puzzle specific styles */
+.puzzle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 1rem;
+  width: 100%;
+}
+
+.puzzle-container.fullscreen {
+  height: 100vh;
+  justify-content: flex-start;
+  padding: 1rem 0 5rem;
+  background-color: var(--bg-dark);
+  overflow-y: auto;
+  position: relative;
+}
+
+.game-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 0.5rem;
+}
+
+.game-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.puzzle-board {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: min(60vh, 90vw, 450px);
+  max-height: min(60vh, 90vw, 450px);
+  aspect-ratio: 1/1;
+  background-color: #3d2b15;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7),
+              0 4px 24px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+  margin: 0 auto;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Make the grid cells visible for better visual feedback */
+.puzzle-board::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Use a subtle grid pattern that works with any dimension */
+  background-size: calc(100% / var(--current-dimension, 3)) calc(100% / var(--current-dimension, 3));
+  background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+                   linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.puzzle-tile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, var(--wood-highlight) 0%, var(--wood-primary) 60%, var(--wood-secondary) 100%);
+  border-radius: 6px;
+  font-size: var(--tile-font-size);
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  padding: 0;
+  transition: transform 0.15s ease-out, 
+              box-shadow 0.2s ease-out;
+  box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.3),
+              inset 0 -2px 3px rgba(0, 0, 0, 0.3),
+              0 3px 4px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--wood-border);
+  user-select: none;
+  will-change: transform;
+  backface-visibility: hidden;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.puzzle-tile:hover {
+  background: linear-gradient(135deg, var(--wood-highlight) 10%, var(--wood-primary) 70%, var(--wood-secondary) 100%);
+  transform: translate3d(calc(var(--x, 0) * 1px), calc(var(--y, 0) * 1px), 0) scale(1.02) translateZ(1px);
+  box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.3),
+              inset 0 -2px 3px rgba(0, 0, 0, 0.3),
+              0 5px 6px rgba(0, 0, 0, 0.4);
+}
+
+.puzzle-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  position: fixed;
+  bottom: 5%;
+  left: 0;
+  right: 0;
+  padding: 1rem 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+#shuffle-button {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: bold;
+  padding: 0.7em 1.5em;
+}
+
+#shuffle-button:hover {
+  background-color: var(--hover-color);
+}
+
+#back-button {
+  background-color: #555;
+  color: white;
+}
+
+#back-button:hover {
+  background-color: #666;
+}
+
+#moves-counter {
+  font-size: 1.2rem;
+  color: #c0c0c0;
+}
+
+.success-message {
+  color: var(--success-color);
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-top: 8px;
+  animation: success-pulse 1.5s infinite;
+}
+
+@keyframes success-pulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  .welcome-screen {
+    width: 90%;
+    max-width: none;
+    padding: 1.5rem;
+  }
+  
+  h1 {
+    font-size: 2.2rem;
+  }
+  
+  h2 {
+    font-size: 1.6rem;
+  }
+  
+  .puzzle-tile {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: var(--text-light);
+    background-color: var(--bg-light);
+  }
+  
+  h1, h2, h3 {
+    color: var(--text-light);
+  }
+  
+  .welcome-screen {
+    background-color: rgba(240, 240, 240, 0.9);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+  
+  #dimension-select {
+    background-color: white;
+    color: var(--text-light);
+    border-color: #ddd;
+  }
+  
+  .puzzle-container.fullscreen {
+    background-color: var(--bg-light);
+  }
+  
+  .puzzle-board {
+    background-color: #8B5A2B;
+    box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5),
+                0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .puzzle-board::before {
+    background-image: linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
+                       linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px);
+  }
+  
+  .puzzle-tile {
+    background: linear-gradient(135deg, #C19A6B 0%, #966F33 60%, #7D5A24 100%);
+    color: rgba(255, 255, 255, 0.95);
+    box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.4),
+                inset 0 -2px 3px rgba(0, 0, 0, 0.3),
+                0 3px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .puzzle-tile:hover {
+    background: linear-gradient(135deg, #D2B48C 10%, #966F33 70%, #7D5A24 100%);
+  }
+  
+  button {
+    background-color: #e0e0e0;
+  }
+  
+  button:hover {
+    background-color: #d0d0d0;
+  }
+  
+  #shuffle-button, .pulse-button {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  #shuffle-button:hover, .pulse-button:hover {
+    background-color: var(--hover-color);
+  }
+  
+  #back-button {
+    background-color: #999;
+  }
+  
+  #back-button:hover {
+    background-color: #888;
+  }
+  
+  .instructions {
+    color: #555;
+  }
+  
+  #moves-counter {
+    color: #444;
+  }
+}
+
+/* Add these touch-specific styles to existing style.css */
+
+/* Touch-specific styles for tiles */
+.puzzle-tile.touch-device {
+  /* Make touch targets larger */
+  padding: 5px;
+  /* Add visual feedback for touch */
+  transition: transform 0.1s ease-out, background-color 0.2s ease;
+}
+
+.puzzle-tile.touch-device:active {
+  background-color: var(--primary-color);
+  transform: scale(0.95);
+}
+
+/* Responsive improvements for small devices */
+@media (max-width: 480px) {
+  .welcome-screen {
+    padding: 1rem;
+    width: 90%;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  .pulse-button {
+    padding: 0.6em 1.5em;
+    font-size: 1.1rem;
+  }
+  
+  .puzzle-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .puzzle-controls button {
+    width: 100%;
+  }
+}
+
+/* Enhanced focus styles for keyboard navigation */
+button:focus-visible,
+select:focus-visible,
+.puzzle-tile:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Smooth animations */
+@keyframes tile-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.puzzle-tile {
+  animation: none;
+}
+
+/* Dark mode preference improvements */
+@media (prefers-color-scheme: dark) {
+  .puzzle-tile {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .puzzle-tile:hover {
+    background-color: var(--hover-color);
+  }
+}
+
+/* High contrast mode support */
+@media (forced-colors: active) {
+  .puzzle-tile {
+    border: 2px solid;
+  }
+  
+  button, select {
+    border: 2px solid;
+  }
+  
+  .success-message {
+    outline: 2px solid;
+  }
+}
+
+/* Add tile sliding animations to the existing styles */
+
+/* Base styles for tile transitions */
+.puzzle-tile {
+  /* Faster transitions */
+  transition: transform 0.15s ease-out, 
+              box-shadow 0.2s ease-out;
+}
+
+/* Add specific styles for the sliding animation */
+.puzzle-tile.sliding {
+  z-index: 10;
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1), 
+              box-shadow 0.25s ease-out;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.2),
+              0 8px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Only apply tile-appear animation to new tiles */
+.puzzle-board.creating-tiles .puzzle-tile {
+  animation: tile-appear 0.2s ease-out;
+}
+
+/* Disable pointer events during animation to prevent multiple clicks */
+.puzzle-tile.sliding {
+  pointer-events: none;
+}
+
+/* Customize the animation for different device sizes */
+@media (max-width: 768px) {
+  .puzzle-tile.sliding {
+    transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1);
+  }
+  
+  .puzzle-tile.sliding.long-move {
+    transition: transform 0.3s cubic-bezier(0.15, 0.85, 0.3, 1);
+  }
+}
+
+/* Enhanced focus state during sliding */
+.puzzle-tile.sliding:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74, 91, 255, 0.5);
+}
+
+/* Hardware acceleration for smoother transitions */
+.puzzle-tile {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Add wood grain texture */
+.puzzle-tile::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(
+      100deg, 
+      rgba(255, 255, 255, 0.06) 0px, 
+      rgba(218, 165, 32, 0.08) 1px, 
+      rgba(255, 255, 255, 0.01) 2px, 
+      rgba(0, 0, 0, 0.04) 3px,
+      rgba(0, 0, 0, 0.01) 4px
+    );
+  opacity: 0.5;
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+/* Styles for row-column shifting (longer moves) */
+.puzzle-tile.sliding.long-move {
+  transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.3, 1),
+              box-shadow 0.3s ease-out;
+  z-index: 15;
+  background: linear-gradient(135deg, var(--wood-highlight) 20%, var(--wood-primary) 60%, var(--wood-secondary) 100%);
+  box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.25),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.2),
+              0 12px 14px rgba(0, 0, 0, 0.5);
+}
