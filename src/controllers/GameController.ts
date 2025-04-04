@@ -48,7 +48,7 @@ export class GameController {
   /**
    * Start the actual puzzle game with selected settings
    */
-  private startGame(): void {
+  protected startGame(): void {
     this.gameStarted = true
     
     // Get selected dimension
@@ -84,7 +84,7 @@ export class GameController {
   /**
    * Handle tile click events with animation handling
    */
-  private handleTileClick(row: number, col: number): void {
+  protected handleTileClick(row: number, col: number): void {
     if (!this.model || this.isMoving) return
     
     // Check if the move is valid
@@ -121,7 +121,7 @@ export class GameController {
   /**
    * Reset the game with a freshly shuffled board
    */
-  private resetGame(): void {
+  protected resetGame(): void {
     if (!this.model) return
     
     this.model.shuffle()
@@ -135,7 +135,7 @@ export class GameController {
   /**
    * Return to welcome screen
    */
-  private backToWelcome(): void {
+  protected backToWelcome(): void {
     this.exitFullscreen()
     this.gameStarted = false
     
@@ -148,7 +148,7 @@ export class GameController {
   /**
    * Update the board display based on model state
    */
-  private updateBoard(): void {
+  protected updateBoard(): void {
     if (!this.model) return
     
     this.view.updateBoard(
@@ -160,7 +160,7 @@ export class GameController {
   /**
    * Attempt to enter fullscreen mode
    */
-  private enterFullscreen(): void {
+  protected enterFullscreen(): void {
     if (supportsFullscreen()) {
       document.documentElement.requestFullscreen().catch(err => {
         console.log(`Error entering fullscreen: ${err.message}`)
@@ -171,7 +171,7 @@ export class GameController {
   /**
    * Exit fullscreen mode if active
    */
-  private exitFullscreen(): void {
+  protected exitFullscreen(): void {
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(err => {
         console.log(`Error exiting fullscreen: ${err.message}`)
@@ -182,12 +182,61 @@ export class GameController {
   /**
    * Set up keyboard event handlers
    */
-  private setupKeyboardHandlers(): void {
+  protected setupKeyboardHandlers(): void {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.gameStarted && document.fullscreenElement) {
         // Just exit fullscreen, don't exit the game
         this.exitFullscreen()
       }
     })
+  }
+
+  /**
+   * Get the current model
+   */
+  protected getModel(): PuzzleModel | null {
+    return this.model;
+  }
+
+  /**
+   * Set a new model
+   */
+  protected setModel(model: PuzzleModel): void {
+    this.model = model;
+  }
+
+  /**
+   * Get the dimension select element
+   */
+  protected getDimensionSelect(): HTMLSelectElement | null {
+    return this.dimensionSelect;
+  }
+
+  /**
+   * Get the view
+   */
+  protected getView(): PuzzleView {
+    return this.view;
+  }
+
+  /**
+   * Reset the move count
+   */
+  protected resetMoveCount(): void {
+    this.moveCount = 0;
+  }
+
+  /**
+   * Check if game has started
+   */
+  protected isGameStarted(): boolean {
+    return this.gameStarted;
+  }
+
+  /**
+   * Setup resize handler
+   */
+  protected setupResizeHandler(): void {
+    window.addEventListener('resize', this.resizeHandler);
   }
 } 

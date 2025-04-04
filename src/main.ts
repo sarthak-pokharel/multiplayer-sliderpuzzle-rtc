@@ -1,5 +1,5 @@
 import './style.css'
-import { GameController } from './controllers/GameController'
+import { MultiplayerGameController } from './controllers/MultiplayerGameController'
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div class="game-container">
@@ -8,5 +8,5 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 `
 
 // Initialize the game controller with the container element
-const gameController = new GameController(document.querySelector<HTMLDivElement>('.game-container')!)
+const gameController = new MultiplayerGameController(document.querySelector<HTMLDivElement>('.game-container')!)
 gameController.start()
