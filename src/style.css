@@ -9,7 +9,16 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --tile-font-size: 2rem;
+  
+  /* Fluid typography using clamp - minimum, preferred, maximum */
+  --fs-small: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --fs-base: clamp(0.875rem, 0.8rem + 0.5vw, 1rem);
+  --fs-medium: clamp(1rem, 0.9rem + 0.75vw, 1.25rem);
+  --fs-large: clamp(1.25rem, 1rem + 1.5vw, 1.75rem);
+  --fs-xl: clamp(1.75rem, 1.5rem + 2vw, 2.5rem);
+  --fs-xxl: clamp(2.25rem, 2rem + 2.5vw, 3.5rem);
+  
+  --tile-font-size: var(--fs-large);
   --primary-color: #4a5bff;
   --hover-color: #5a6bff;
   --bg-dark: #1a1a1a;
@@ -24,6 +33,21 @@
   --wood-highlight: #AB8044;
   --wood-shadow: #5D4A2C;
   --wood-border: #4A3520;
+  
+  /* Responsive base font size */
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    font-size: 12px;
+  }
 }
 
 body {
@@ -32,7 +56,13 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 h1, h2, h3 {
@@ -42,12 +72,12 @@ h1, h2, h3 {
 }
 
 h1 {
-  font-size: 2.8rem;
+  font-size: var(--fs-xxl);
   margin-bottom: 1.5rem;
 }
 
 h2 {
-  font-size: 2rem;
+  font-size: var(--fs-xl);
   margin-bottom: 1rem;
 }
 
@@ -69,6 +99,8 @@ h2 {
   align-items: center;
   width: 100%;
   height: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 button {
@@ -129,7 +161,7 @@ button:focus-visible {
 }
 
 .welcome-content p {
-  font-size: 1.2rem;
+  font-size: var(--fs-medium);
   margin: 0;
 }
 
@@ -142,13 +174,13 @@ button:focus-visible {
 }
 
 .dimension-selector label {
-  font-size: 1.1rem;
+  font-size: var(--fs-medium);
   margin-bottom: 0.5rem;
 }
 
 #dimension-select {
   padding: 0.8rem;
-  font-size: 1rem;
+  font-size: var(--fs-base);
   border-radius: 8px;
   border: 1px solid #444;
   background-color: #2a2a2a;
@@ -164,7 +196,7 @@ button:focus-visible {
 .pulse-button {
   background-color: var(--primary-color);
   color: white;
-  font-size: 1.2rem;
+  font-size: var(--fs-medium);
   font-weight: bold;
   padding: 0.8em 2em;
   margin-top: 1rem;
@@ -196,50 +228,58 @@ button:focus-visible {
   gap: 20px;
   padding: 1rem;
   width: 100%;
+  height: auto;
+  min-height: 100%;
 }
 
 .puzzle-container.fullscreen {
-  height: 100vh;
-  justify-content: flex-start;
-  padding: 1rem 0 5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
   background-color: var(--bg-dark);
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   overflow-y: auto;
-  position: relative;
+  padding-top: max(env(safe-area-inset-top, 0px), 1rem);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 1rem);
 }
 
 .game-header {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 10px;
   width: 100%;
-  max-width: 600px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .game-stats {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 1.1rem;
 }
 
+/* Updated board styling for consistency */
 .puzzle-board {
-  display: block;
-  width: 100%;
-  height: 100%;
-  max-width: min(60vh, 90vw, 450px);
-  max-height: min(60vh, 90vw, 450px);
-  aspect-ratio: 1/1;
-  background-color: #3d2b15;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7),
-              0 4px 24px rgba(0, 0, 0, 0.4);
-  transition: all 0.3s ease;
-  margin: 0 auto;
+  display: grid;
+  gap: 2px;
   position: relative;
-  box-sizing: border-box;
+  background-color: #6D4C41;
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8),
+              0 6px 20px rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  margin: 0 auto;
+  width: min(90vw, 90vh, 500px);
+  height: min(90vw, 90vh, 500px);
+  overflow: hidden;
+  transform: translateZ(0); /* Hardware acceleration */
+  touch-action: manipulation; /* Improve touch behavior */
 }
 
 /* Make the grid cells visible for better visual feedback */
@@ -258,6 +298,7 @@ button:focus-visible {
   z-index: 0;
 }
 
+/* Updated tile styling for consistency */
 .puzzle-tile {
   display: flex;
   justify-content: center;
@@ -358,14 +399,160 @@ button:focus-visible {
   
   h1 {
     font-size: 2.2rem;
+    margin-bottom: 1rem;
   }
   
   h2 {
     font-size: 1.6rem;
+    margin-bottom: 0.8rem;
   }
   
   .puzzle-tile {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  .puzzle-board {
+    width: 90vw !important;
+    height: 90vw !important;
+    max-width: 90vmin;
+    max-height: 90vmin;
+  }
+  
+  .puzzle-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    gap: 0.8rem;
+    margin-top: 1rem;
+  }
+  
+  .welcome-content {
+    gap: 1rem;
+  }
+}
+
+/* Responsive improvements for small devices */
+@media (max-width: 480px) {
+  .welcome-screen {
+    padding: 1rem;
+    width: 95%;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.6rem;
+  }
+  
+  .pulse-button {
+    padding: 0.6em 1.5em;
+    font-size: 1.1rem;
+    width: 100%;
+  }
+  
+  .puzzle-controls {
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 1rem;
+  }
+  
+  .puzzle-controls button {
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.5em 1em;
+  }
+  
+  .puzzle-board {
+    width: 95vw !important;
+    height: 95vw !important;
+  }
+  
+  .game-header {
+    padding: 0.5rem;
+  }
+  
+  .game-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  #moves-counter {
+    font-size: 0.9rem;
+  }
+  
+  .dimension-selector {
+    width: 100%;
+  }
+}
+
+/* Additional styles for very small devices */
+@media (max-width: 360px) {
+  .welcome-screen {
+    padding: 0.8rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.2rem;
+  }
+  
+  .welcome-content p {
+    font-size: 1rem;
+  }
+  
+  .dimension-selector label {
+    font-size: 0.9rem;
+  }
+  
+  #dimension-select {
+    font-size: 0.9rem;
+    padding: 0.6rem;
+  }
+}
+
+/* Landscape orientation styles */
+@media (max-height: 500px) and (orientation: landscape) {
+  .puzzle-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .game-header {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .puzzle-board {
+    width: 70vh !important;
+    height: 70vh !important;
+    margin: 0;
+  }
+  
+  .puzzle-controls {
+    flex-direction: column;
+    height: 70vh;
+    justify-content: center;
+    margin-left: 1rem;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.6rem;
+  }
+  
+  h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.4rem;
   }
 }
 
@@ -464,32 +651,6 @@ button:focus-visible {
 .puzzle-tile.touch-device:active {
   background-color: var(--primary-color);
   transform: scale(0.95);
-}
-
-/* Responsive improvements for small devices */
-@media (max-width: 480px) {
-  .welcome-screen {
-    padding: 1rem;
-    width: 90%;
-  }
-  
-  h1 {
-    font-size: 2rem;
-  }
-  
-  .pulse-button {
-    padding: 0.6em 1.5em;
-    font-size: 1.1rem;
-  }
-  
-  .puzzle-controls {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .puzzle-controls button {
-    width: 100%;
-  }
 }
 
 /* Enhanced focus styles for keyboard navigation */

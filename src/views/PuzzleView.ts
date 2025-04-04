@@ -607,6 +607,16 @@ export class PuzzleView {
     
     // Clear previous tile references
     this.tileElements.clear()
+    
+    // Debug log the board dimensions in solo game
+    console.log("SOLO GAME BOARD DIMENSIONS: ", {
+      dimension,
+      boardElement: this.boardElement,
+      style: this.boardElement ? {
+        width: this.boardElement.style.width,
+        height: this.boardElement.style.height
+      } : null
+    });
   }
 
   /**
@@ -664,6 +674,16 @@ export class PuzzleView {
     
     // Clear previous tile references
     this.tileElements.clear()
+    
+    // Debug log the board dimensions in multiplayer game
+    console.log("MULTIPLAYER GAME BOARD DIMENSIONS: ", {
+      dimension,
+      boardElement: this.boardElement,
+      style: this.boardElement ? {
+        width: this.boardElement.style.width,
+        height: this.boardElement.style.height
+      } : null
+    });
   }
 
   /**
@@ -676,8 +696,16 @@ export class PuzzleView {
     
     const dimension = board.length
     
+    console.log("UPDATE BOARD CALLED: ", {
+      dimension,
+      boardElementExists: !!this.boardElement,
+      tileElementsCount: this.tileElements.size,
+      expectedTileCount: dimension * dimension - 1
+    });
+    
     // If this is a complete reset (like after shuffle), clear all tiles
     if (this.tileElements.size === 0 || this.tileElements.size !== dimension * dimension - 1) {
+      console.log("REBUILDING TILES FROM SCRATCH");
       // Clear the board
       this.boardElement.innerHTML = ''
       this.tileElements.clear()
@@ -688,6 +716,7 @@ export class PuzzleView {
       // Create new tile elements
       this.createTileElements(board, clickHandler)
     } else {
+      console.log("UPDATING EXISTING TILES");
       // Just update positions of existing tiles
       this.updateTilePositions(board, clickHandler)
     }
@@ -817,9 +846,10 @@ export class PuzzleView {
    * Position a tile at specific row/col using transforms
    */
   private setTilePosition(tile: HTMLElement, row: number, col: number, animate: boolean = true): void {
-    // Set the size of the tile
-    tile.style.width = `${this.tileSize}px`
-    tile.style.height = `${this.tileSize}px`
+    // Set the size of the tile with a consistent approach
+    // We use Math.floor to ensure exact pixel values
+    tile.style.width = `${Math.floor(this.tileSize)}px`
+    tile.style.height = `${Math.floor(this.tileSize)}px`
     
     // Get actual board padding from computed style
     const computedStyle = window.getComputedStyle(this.boardElement!)
@@ -827,8 +857,11 @@ export class PuzzleView {
     const gap = 6 // Gap between tiles
     
     // Calculate position including the board padding
-    const x = boardPadding + col * (this.tileSize + gap)
-    const y = boardPadding + row * (this.tileSize + gap)
+    // We use Math.floor for consistent pixel positioning
+    const x = Math.floor(boardPadding + col * (this.tileSize + gap))
+    const y = Math.floor(boardPadding + row * (this.tileSize + gap))
+    
+    console.log(`Positioning tile at row ${row}, col ${col}: x=${x}, y=${y}, size=${this.tileSize}`)
     
     if (animate) {
       // For animated moves, apply a transform
@@ -906,11 +939,17 @@ export class PuzzleView {
 
   /**
    * Show a success message when the puzzle is solved
+   * @param moves Number of moves taken
+   * @param timeSeconds Time taken in seconds (optional)
    */
-  showSuccessMessage(moves: number): void {
+  showSuccessMessage(moves: number, timeSeconds?: number): void {
     if (this.statusMessage) {
-      this.statusMessage.textContent = `Puzzle solved in ${moves} moves! 🎉`
-      this.statusMessage.classList.add('success')
+      if (timeSeconds !== undefined) {
+        this.statusMessage.textContent = `Puzzle solved in ${moves} moves and ${timeSeconds} seconds! 🎉`;
+      } else {
+        this.statusMessage.textContent = `Puzzle solved in ${moves} moves! 🎉`;
+      }
+      this.statusMessage.classList.add('success');
     }
   }
 
@@ -927,10 +966,12 @@ export class PuzzleView {
   /**
    * Show message when the opponent has won
    * @param playerName Name of the player who won
+   * @param moves Number of moves taken
+   * @param timeSeconds Time taken in seconds
    */
-  showOpponentWon(playerName: string): void {
+  showOpponentWon(playerName: string, moves: number, timeSeconds: number): void {
     if (this.opponentStatus) {
-      this.opponentStatus.textContent = `${playerName} solved the puzzle first! 🏆`;
+      this.opponentStatus.textContent = `${playerName} solved the puzzle in ${moves} moves and ${timeSeconds} seconds! 🏆`;
       this.opponentStatus.classList.add('opponent-won');
     }
   }
@@ -954,9 +995,27 @@ export class PuzzleView {
     const viewportHeight = window.innerHeight
     const viewportWidth = window.innerWidth
     
-    // Calculate maximum size that fits the screen
-    const maxSize = Math.min(viewportHeight * 0.7, viewportWidth * 0.8)
-    const boardSize = maxSize
+    // Use a consistent calculation method that works well for both solo and multiplayer
+    // Calculate maximum size that fits the screen with more consistent constraints
+    const maxSize = Math.min(
+      // Limit height to avoid overflow with controls
+      viewportHeight * 0.65,
+      // Limit width to avoid issues with smaller screens
+      viewportWidth * 0.75,
+      // Cap maximum size to avoid too large boards
+      600
+    )
+    
+    // Round to nearest pixel for consistency
+    const boardSize = Math.floor(maxSize)
+    
+    console.log("CONSISTENT BOARD STYLE CALCULATION: ", {
+      dimension,
+      viewportHeight,
+      viewportWidth,
+      maxSize,
+      boardSize
+    });
     
     // Update board size
     this.boardElement.style.width = `${boardSize}px`
@@ -975,7 +1034,21 @@ export class PuzzleView {
     const availableSpace = boardRect.width - boardPadding
     
     // Calculate tile size to exactly fill the available space
-    this.tileSize = (availableSpace - (dimension - 1) * gap) / dimension
+    this.tileSize = Math.floor((availableSpace - (dimension - 1) * gap) / dimension)
+    
+    console.log("CONSISTENT BOARD STYLE AFTER CALCULATION: ", {
+      boardRect: {
+        width: boardRect.width,
+        height: boardRect.height
+      },
+      boardPadding,
+      availableSpace,
+      tileSize: this.tileSize,
+      finalStyle: {
+        width: this.boardElement.style.width,
+        height: this.boardElement.style.height
+      }
+    });
     
     // Adjust font size based on dimension
     const fontSize = Math.max(16, Math.floor(48 / dimension * 3))

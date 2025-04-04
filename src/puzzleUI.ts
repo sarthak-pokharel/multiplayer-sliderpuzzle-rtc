@@ -82,20 +82,61 @@ export function setupPuzzle(container: HTMLElement) {
     function updateBoardStyle(dimension: number) {
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
+      const isLandscape = viewportWidth > viewportHeight;
       
-      // Calculate the maximum size that can fit the screen (with some margin)
-      const maxSize = Math.min(viewportHeight * 0.7, viewportWidth * 0.8);
+      // Determine available space based on orientation
+      let maxSize;
+      
+      if (isLandscape && viewportHeight < 500) {
+        // Special handling for landscape on small devices
+        maxSize = Math.min(viewportHeight * 0.7, viewportWidth * 0.5);
+      } else if (viewportWidth < 480) {
+        // Small mobile devices
+        maxSize = Math.min(viewportHeight * 0.5, viewportWidth * 0.95);
+      } else if (viewportWidth < 768) {
+        // Tablet and medium-sized devices
+        maxSize = Math.min(viewportHeight * 0.6, viewportWidth * 0.9);
+      } else {
+        // Desktop and larger devices
+        maxSize = Math.min(viewportHeight * 0.7, viewportWidth * 0.8);
+      }
+      
       const tileSize = Math.floor(maxSize / dimension);
       const boardSize = tileSize * dimension + (dimension * 2);
       
       boardElement.style.gridTemplateColumns = `repeat(${dimension}, 1fr)`;
       boardElement.style.gridTemplateRows = `repeat(${dimension}, 1fr)`;
-      boardElement.style.width = `${boardSize}px`;
-      boardElement.style.height = `${boardSize}px`;
       
-      // Adjust font size for tiles based on dimension
-      const fontSize = Math.max(16, Math.floor(48 / dimension * 3));
+      // Use viewport units with a maximum value
+      if (viewportWidth < 768) {
+        // For mobile, let CSS media queries handle the board size
+        boardElement.style.width = '';
+        boardElement.style.height = '';
+      } else {
+        // For desktop, use calculated size
+        boardElement.style.width = `${boardSize}px`;
+        boardElement.style.height = `${boardSize}px`;
+      }
+      
+      // Adjust font size for tiles based on dimension and viewport
+      let fontSize;
+      if (viewportWidth < 400) {
+        fontSize = Math.max(12, Math.floor(32 / dimension * 3));
+      } else if (viewportWidth < 768) {
+        fontSize = Math.max(14, Math.floor(40 / dimension * 3));
+      } else {
+        fontSize = Math.max(16, Math.floor(48 / dimension * 3));
+      }
+      
       document.documentElement.style.setProperty('--tile-font-size', `${fontSize}px`);
+      
+      // Add touch device class if on mobile
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      if (isTouchDevice) {
+        document.querySelectorAll('.puzzle-tile').forEach(tile => {
+          tile.classList.add('touch-device');
+        });
+      }
     }
     
     // Function to update the UI based on the current game state

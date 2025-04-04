@@ -26,7 +26,7 @@ export class PeerService {
   private onGameDeclinedCallback: ((from: string) => void) | null = null;
   private onGameStartCallback: ((dimension: number, board: number[][]) => void) | null = null;
   private onMoveMadeCallback: ((row: number, col: number) => void) | null = null;
-  private onGameWonCallback: ((playerName: string) => void) | null = null;
+  private onGameWonCallback: ((playerName: string, moves: number, timeSeconds: number) => void) | null = null;
   private onResetGameCallback: (() => void) | null = null;
   private onConnectionStatusCallback: ((isConnected: boolean, isHost: boolean) => void) | null = null;
   private onErrorCallback: ((message: string) => void) | null = null;
@@ -286,7 +286,7 @@ export class PeerService {
         
       case 'game-won':
         // Game won
-        this.onGameWonCallback?.(data.playerName);
+        this.onGameWonCallback?.(data.playerName, data.moves, data.timeSeconds);
         break;
         
       case 'reset-game':
@@ -395,14 +395,18 @@ export class PeerService {
   
   /**
    * Send game won notification
+   * @param moves Number of moves taken to solve the puzzle
+   * @param timeSeconds Time in seconds taken to solve the puzzle
    */
-  public sendGameWon(): void {
+  public sendGameWon(moves: number, timeSeconds: number): void {
     // Send to all open connections
     this.connections.forEach(conn => {
       if (conn.open) {
         conn.send({
           type: 'game-won',
-          playerName: this.playerName
+          playerName: this.playerName,
+          moves: moves,
+          timeSeconds: timeSeconds
         });
       }
     });
@@ -509,7 +513,7 @@ export class PeerService {
   /**
    * Set callback for when a player wins
    */
-  public onGameWon(callback: (playerName: string) => void): void {
+  public onGameWon(callback: (playerName: string, moves: number, timeSeconds: number) => void): void {
     this.onGameWonCallback = callback;
   }
   

@@ -16,6 +16,7 @@ export class MultiplayerGameController extends GameController {
   private isInitialized: boolean = false;
   private pendingCallbacks: (() => void)[] = [];
   private isHost: boolean = false;
+  private gameStartTime: number = 0;
 
   /**
    * Create a multiplayer game controller
@@ -112,8 +113,8 @@ export class MultiplayerGameController extends GameController {
     });
 
     // Handle game won notification
-    this.peerService.onGameWon((playerName) => {
-      this.handleOpponentWon(playerName);
+    this.peerService.onGameWon((playerName, moves, timeSeconds) => {
+      this.handleOpponentWon(playerName, moves, timeSeconds);
     });
 
     // Handle reset game
@@ -184,12 +185,16 @@ export class MultiplayerGameController extends GameController {
     this.opponentSolved = false;
     this.waitingForPeerId = null;
     
-    // Render the welcome screen immediately
+    // Render the welcome screen immediately and store the dimension selector
+    // in the parent class property so it can be accessed later
     const dimensionSelect = this.multiplayerView.renderMultiplayerWelcomeScreen(
       () => this.startSinglePlayerGame(),
       () => this.whenInitialized(() => this.showConnectionScreen()),
       3
     );
+    
+    // Save the dimension select element for later use
+    this.setDimensionSelect(dimensionSelect);
     
     // Set up keyboard handler for fullscreen escape
     this.setupKeyboardHandlers();
@@ -280,12 +285,20 @@ export class MultiplayerGameController extends GameController {
     // Prepare UI for game start
     this.prepareGameUI();
     
-    const dimension = this.getDimensionSelect() ? 
-      parseInt(this.getDimensionSelect()!.value) : 3;
+    const dimensionSelect = this.getDimensionSelect();
+    console.log("Dimension select element:", dimensionSelect);
+    
+    const dimension = dimensionSelect ? 
+      parseInt(dimensionSelect.value) : 3;
+    
+    console.log("Selected dimension:", dimension);
     
     // Create a new puzzle model with the selected dimension
     this.setModel(new PuzzleModel(dimension));
     this.resetMoveCount();
+    
+    // Record game start time
+    this.gameStartTime = Date.now();
     
     // Enter fullscreen and render game UI with multiplayer indicators
     this.enterFullscreen();
@@ -302,6 +315,11 @@ export class MultiplayerGameController extends GameController {
     
     // Update and render the board
     this.updateBoard();
+    console.log("Host game: updateBoard called with dimension", dimension);
+    
+    // Force a resize to ensure board is correctly sized
+    this.multiplayerView.handleResize();
+    console.log("Host game: handleResize called");
     
     // Shuffle the puzzle to start
     this.resetGame();
@@ -322,6 +340,9 @@ export class MultiplayerGameController extends GameController {
     
     // Create a new puzzle model with the received board
     const model = new PuzzleModel(dimension);
+    
+    // Record game start time
+    this.gameStartTime = Date.now();
     
     // Override the board with the one from the host
     // This is a hack - should add a proper method to PuzzleModel
@@ -347,6 +368,11 @@ export class MultiplayerGameController extends GameController {
     
     // Update and render the board
     this.updateBoard();
+    console.log("Client game: updateBoard called with dimension", dimension);
+    
+    // Force a resize to ensure board is correctly sized
+    this.multiplayerView.handleResize();
+    console.log("Client game: handleResize called");
   }
 
   /**
@@ -384,7 +410,16 @@ export class MultiplayerGameController extends GameController {
       
       // Check if the puzzle is solved after this move
       if (this.getModel()?.isSolved()) {
-        this.peerService.sendGameWon();
+        // Calculate time taken
+        const endTime = Date.now();
+        const timeSeconds = Math.round((endTime - this.gameStartTime) / 1000);
+        const moves = this.getMoveCount();
+        
+        // Send game won notification with time and moves
+        this.peerService.sendGameWon(moves, timeSeconds);
+        
+        // Show success message with time
+        this.showSuccessMessage(moves, timeSeconds);
       }
     }
   }
@@ -407,6 +442,9 @@ export class MultiplayerGameController extends GameController {
    */
   protected override resetGame(): void {
     super.resetGame();
+    
+    // Reset game start time
+    this.gameStartTime = Date.now();
     
     // If in multiplayer mode and we're the host, send the reset to the peer
     if (this.isMultiplayerActive && this.isHost) {
@@ -447,9 +485,9 @@ export class MultiplayerGameController extends GameController {
   /**
    * Handle the opponent winning
    */
-  private handleOpponentWon(playerName: string): void {
+  private handleOpponentWon(playerName: string, moves: number, timeSeconds: number): void {
     this.opponentSolved = true;
-    this.multiplayerView.showOpponentWon(playerName);
+    this.multiplayerView.showOpponentWon(playerName, moves, timeSeconds);
   }
 
   /**
@@ -493,5 +531,30 @@ export class MultiplayerGameController extends GameController {
     // Clear temporary messages
     const tempMessages = document.querySelectorAll('.temporary-message');
     tempMessages.forEach(msg => msg.remove());
+  }
+
+  /**
+   * Get the current move count - access the protected moveCount in the parent class
+   * by using other available methods
+   */
+  private getMoveCount(): number {
+    // We can try to read the moves counter from the view
+    const movesElement = this.multiplayerView.container.querySelector('#moves-counter');
+    if (movesElement) {
+      const text = movesElement.textContent || '';
+      const match = text.match(/Moves: (\d+)/);
+      if (match && match[1]) {
+        return parseInt(match[1]);
+      }
+    }
+    // Default fallback
+    return 0;
+  }
+
+  /**
+   * Show the success message with custom time info
+   */
+  private showSuccessMessage(moves: number, timeSeconds: number): void {
+    this.multiplayerView.showSuccessMessage(moves, timeSeconds);
   }
 } 

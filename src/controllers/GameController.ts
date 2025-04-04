@@ -55,6 +55,8 @@ export class GameController {
     const dimension = this.dimensionSelect ? 
       parseInt(this.dimensionSelect.value) : 3
     
+    console.log("Solo game - Selected dimension:", dimension)
+    
     // Create puzzle model
     this.model = new PuzzleModel(dimension)
     
@@ -76,6 +78,11 @@ export class GameController {
     
     // Update and render the board
     this.updateBoard()
+    console.log("Solo game: updateBoard called with dimension", dimension)
+    
+    // Force a resize to ensure board is correctly sized
+    this.view.handleResize()
+    console.log("Solo game: handleResize called")
     
     // Shuffle the puzzle to start
     this.resetGame()
@@ -210,6 +217,13 @@ export class GameController {
    */
   protected getDimensionSelect(): HTMLSelectElement | null {
     return this.dimensionSelect;
+  }
+
+  /**
+   * Set the dimension select element
+   */
+  protected setDimensionSelect(select: HTMLSelectElement): void {
+    this.dimensionSelect = select;
   }
 
   /**
